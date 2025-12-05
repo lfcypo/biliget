@@ -1,12 +1,26 @@
 use std::path::Path;
 use std::process::Command;
+use thiserror::Error;
 
-pub fn merge_video(video_file: &Path, audio_file: &Path, output_file: &Path) {
+#[derive(Debug, Error)]
+pub enum ClipError {
+    #[error("找不到相关文件")]
+    FileNotFound(),
+
+    #[error("合并音视频失败: {0}")]
+    MergeError(String),
+}
+
+pub fn merge_video(
+    video_file: &Path,
+    audio_file: &Path,
+    output_file: &Path,
+) -> Result<(), ClipError> {
     if !Path::new(&video_file).exists() || !Path::new(&audio_file).exists() {
-        return;
+        return Err(ClipError::FileNotFound());
     }
 
-    Command::new("ffmpeg")
+    let status = match Command::new("ffmpeg")
         .args([
             "-i",
             video_file.to_str().unwrap(),
@@ -22,5 +36,14 @@ pub fn merge_video(video_file: &Path, audio_file: &Path, output_file: &Path) {
             output_file.to_str().unwrap(),
         ])
         .status()
-        .unwrap();
+    {
+        Ok(status) => status,
+        Err(e) => return Err(ClipError::MergeError(e.to_string().as_str().parse().unwrap())),
+    };
+
+    if !status.success() {
+        return Err(ClipError::MergeError("ffmpeg执行失败".to_string()))
+    }
+
+    Ok(())
 }

@@ -5,7 +5,6 @@ use crate::extract::bvid::get_bvid_from_url;
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use std::env;
 use std::io;
-use std::path::Path;
 
 mod clip;
 mod downloader;
@@ -21,8 +20,20 @@ fn main() {
 
     let url = &args[1];
 
-    let bvid = get_bvid_from_url(url).unwrap();
-    let (video_url, audio_url, mut title, headers) = get_download_url(&bvid).unwrap();
+    let bvid = match get_bvid_from_url(url) {
+        Some(bvid) => bvid,
+        _ => {
+            println!("获取bvid失败喵(");
+            return;
+        }
+    };
+    let (video_url, audio_url, mut title, headers) = match get_download_url(&bvid) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("{}", e);
+            return;
+        }
+    };
     title = if title.is_empty() {
         "downloaded_video".to_string()
     } else {
@@ -35,13 +46,12 @@ fn main() {
     println!();
 
     let download_dir = match env::current_dir() {
-        Ok(path) => path.display().to_string(),
+        Ok(path) => path,
         Err(_) => {
             println!("不知道下到哪喵！");
             return;
         }
     };
-    let download_dir = Path::new(&download_dir);
 
     let video_temp_file = download_dir.join(format!("{title}-video.tmp"));
     let audio_temp_file = download_dir.join(format!("{title}-audio.tmp"));
@@ -55,17 +65,26 @@ fn main() {
     println!();
 
     println!("下视频喵...");
-    download_file(&video_url, &video_temp_file, &headers);
+    if let Err(e) = download_file(&video_url, &video_temp_file, &headers) {
+        eprintln!("{}", e);
+        return;
+    };
     add_temp_file(&video_temp_file);
     println!("下完视频喵...");
 
     println!("下音频喵...");
-    download_file(&audio_url, &audio_temp_file, &headers);
+    if let Err(e) = download_file(&audio_url, &audio_temp_file, &headers) {
+        eprintln!("{}", e);
+        return;
+    };
     add_temp_file(&audio_temp_file);
     println!("下完音频喵...");
 
     println!("下完合并喵...");
-    merge_video(&video_temp_file, &audio_temp_file, &output_file);
+    if let Err(e) = merge_video(&video_temp_file, &audio_temp_file, &output_file) {
+        eprintln!("{}", e);
+        return;
+    };
     println!("合并完了喵...");
 
     drop_temp_file();

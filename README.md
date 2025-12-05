@@ -24,4 +24,4 @@
 
 * [share121/unidown](https://github.com/share121/unidown)
 
-[share121](https://github.com/share121)是一个优秀的Rust开发者，让我领略到了Rust语言的魅力。
+[share121](https://github.com/share121)是一个优秀的Rust开发者，让我领略到了Rust语言的魅力，并针对本项目提供了诸多建议。
