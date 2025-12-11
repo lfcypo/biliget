@@ -22,13 +22,13 @@ cargo build --release
 
 在使用前，您需要安装[FFmpeg](https://ffmpeg.org/)命令行工具，并将其二进制程序添加至环境变量中。
 
-对于 Windows 系统，您可以使用[Scoop]。(https://scoop.sh/)
+对于 Windows 系统，您可以使用[Scoop](https://scoop.sh/)。
 
 ```shell
 scoop install ffmpeg
 ```
 
-对于 macOS 系统，您可以使用[HomeBrew]。(https://brew.sh/)
+对于 macOS 系统，您可以使用[HomeBrew](https://brew.sh/)。
 
 ```shell
 brew install ffmpeg
