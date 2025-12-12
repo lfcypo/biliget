@@ -1,6 +1,8 @@
 # BiliGet
 
-简单的 B 站视频下载工具，可以免登录下载 B 站高清视频，灵感来自[share121/unidown](https://github.com/share121/unidown).
+简单的 B 站视频下载工具 可以免登录下载 B 站高清视频
+
+灵感来自[share121/unidown](https://github.com/share121/unidown).
 
 > [!WARNING]  
 > 这个项目是个人学习 Rust 的练习项目，不适合在可靠性要求高的场景下使用，尽管它没有很大的问题。
@@ -16,9 +18,11 @@ cargo update
 cargo build --release
 ```
 
+然后 您可以在`target/release/`目录下找到您编译的可执行文件 `biliget`
+
 ## 使用
 
-### 依赖安装
+### 使用前
 
 在使用前，您需要安装[FFmpeg](https://ffmpeg.org/)命令行工具，并将其二进制程序添加至环境变量中。
 
@@ -34,10 +38,16 @@ scoop install ffmpeg
 brew install ffmpeg
 ```
 
-### 下载视频
+### 下载
 
+默认模式：自动合并音视频为一个`.mp4`视频文件
 ```shell
 ./biliget [url]
+```
+
+仅下载音频：保存为`.wav`音频文件
+```shell
+./biliget [url] -a
 ```
 
 ## 待实现的功能
@@ -48,6 +58,15 @@ brew install ffmpeg
 - Github Action 自动构建与发布
 
 由于本项目是我的第一个完整的 Rust 项目，因此代码质量可能不理想，欢迎提 issue。
+
+
+## 常见问题
+
+命令执行出错
+```text
+zsh: parse error near `&'
+```
+请把`[url]`的部分使用英文双引号包裹
 
 ## 致谢
 
