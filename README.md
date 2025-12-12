@@ -38,6 +38,8 @@ scoop install ffmpeg
 brew install ffmpeg
 ```
 
+在 Linux 系统上，您也可以使用您喜爱的方式进行安装。
+
 ### 下载
 
 默认模式：自动合并音视频为一个`.mp4`视频文件
