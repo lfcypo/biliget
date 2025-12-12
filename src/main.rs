@@ -23,7 +23,7 @@ fn main() {
     let bvid = match get_bvid_from_url(url) {
         Some(bvid) => bvid,
         _ => {
-            println!("获取bvid失败喵(");
+            println!("获取bvid失败喵");
             return;
         }
     };
@@ -59,7 +59,7 @@ fn main() {
 
     println!("准备下到: {}", output_file.display());
 
-    println!("按回车继续喵  ᯠ _ ̫  _ ᯄ  ");
+    println!("按回车继续喵...");
     io::stdin().read_line(&mut String::new()).unwrap();
 
     println!();
