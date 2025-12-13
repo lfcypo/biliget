@@ -1,4 +1,4 @@
-use crate::processer::ffmpeg::{convert_audio, merge_video, FfmpegError};
+use crate::processer::ffmpeg::{FfmpegError, convert_audio, merge_video};
 use std::path::Path;
 use thiserror::Error;
 

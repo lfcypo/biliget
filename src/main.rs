@@ -1,7 +1,7 @@
 use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
-use crate::processer::process::{process, ProcessOption};
+use crate::processer::process::{ProcessOption, process};
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
 use std::env;

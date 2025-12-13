@@ -11,7 +11,11 @@ pub enum DownloadError {
     WriteError(#[from] std::io::Error),
 }
 
-pub fn download_file(url: &String, dest_file: &PathBuf, headers: &HeaderMap) -> Result<(), DownloadError> {
+pub fn download_file(
+    url: &String,
+    dest_file: &PathBuf,
+    headers: &HeaderMap,
+) -> Result<(), DownloadError> {
     let client = reqwest::blocking::Client::new();
     let mut response = client.get(url).headers(headers.clone()).send()?;
     let mut file = std::fs::File::create(dest_file)?;

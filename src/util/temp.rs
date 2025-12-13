@@ -1,4 +1,4 @@
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 lazy_static::lazy_static! {
