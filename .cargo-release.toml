@@ -1,0 +1,10 @@
+[package]
+name = "biliget"
+
+changelog = { path = "CHANGELOG.md", template = "keepachangelog" }
+tag-prefix = "v"
+
+publish = true
+publish-doc = false
+
+branch-whitelist = ["main", "master"]
