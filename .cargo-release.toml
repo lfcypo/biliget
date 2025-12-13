@@ -1,6 +1,7 @@
 [package]
 name = "biliget"
 
+[package.metadata.release]
 changelog = { path = "CHANGELOG.md", template = "keepachangelog" }
 tag-prefix = "v"
 
@@ -8,3 +9,5 @@ publish = true
 publish-doc = false
 
 branch-whitelist = ["main", "master"]
+
+commit-message = "chore(release): 发布 {{name}} 自 {{old_version}} 至 {{version}}"
