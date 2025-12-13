@@ -2,8 +2,16 @@
 name = "biliget"
 version = "0.1.0"
 edition = "2024"
-authors = ["lfcypo <lfcypo@gmail.com>"]
 readme = "README.md"
+description = "简单的B站视频下载工具 可以免登录下载B站高清视频"
+
+authors = ["lfcypo <lfcypo@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/lfcypo/biliget"
+
+homepage = "https://github.com/lfcypo/biliget"
+keywords = ["bilibili", "download", "cli", "video"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 http = "1.4.0"
