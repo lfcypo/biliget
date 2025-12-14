@@ -79,10 +79,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.target }}-cargo-
 
-      - name: Install Musl tools (Linux)
-        if: contains(matrix.build, 'linux')
+      - name: Install Musl tools and OpenSSL (Linux)
+        if: contains(matrix.build, 'linux') && matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          sudo apt update && sudo apt install -y musl-tools
+          sudo apt update
+          sudo apt install -y musl-tools libssl-dev
+          sudo apt install -y libssl-dev:amd64
 
       - name: Check formatting
         if: matrix.build == 'linux-64bit'
