@@ -4,19 +4,6 @@
 
 灵感来自[share121/unidown](https://github.com/share121/unidown).
 
-## 编译
-
-请确保您安装并配置了[Rust](https://rust-lang.org/)语言开发工具链。
-
-```shell
-git clone https://github.com/lfcypo/biliget.git
-cd biliget
-cargo update
-cargo build --release
-```
-
-然后 您可以在`target/release/`目录下找到您编译的可执行文件 `biliget`
-
 ## 使用
 
 ### 使用前
@@ -51,24 +38,44 @@ brew install ffmpeg
 ./biliget [url] -a
 ```
 
+## 编译与构建
+
+GitHub Action 会自动编译构建并发布至[Release页面](https://github.com/lfcypo/biliget/releases)
+
+如您需要自行编译，请参考以下指南：
+
+请确保您安装并配置了[Rust](https://rust-lang.org/)语言开发工具链。
+
+```shell
+git clone https://github.com/lfcypo/biliget.git
+cd biliget
+cargo update
+cargo build --release
+```
+
+然后 您可以在`target/release/`目录下找到您编译的可执行文件 `biliget`
+
 ## 待实现的功能
 
+- :white_check_mark: GitHub Action 自动构建与发布
 - 多线程下载
 - 多视频平台下载
 - 字幕、弹幕下载
-- Github Action 自动构建与发布
-
-由于本项目是我的第一个完整的 Rust 项目，因此代码质量可能不理想，欢迎提 issue。
+- 
 
 ## 常见问题
 
-命令执行出错
+### 命令执行出错
 
 ```text
 zsh: parse error near `&'
 ```
 
 请把`[url]`的部分使用英文双引号包裹
+
+### 找不到`ffmpeg`命令
+
+请参照[使用前准备](https://github.com/lfcypo/biliget?tab=readme-ov-file#%E4%BD%BF%E7%94%A8%E5%89%8D)正确安装`ffmpeg`
 
 ## 致谢
 
