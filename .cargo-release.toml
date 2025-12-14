@@ -5,7 +5,7 @@ name = "biliget"
 changelog = { path = "CHANGELOG.md", template = "keepachangelog" }
 tag-prefix = "v"
 
-publish = true
+publish = false
 publish-doc = false
 
 branch-whitelist = ["main", "master"]
