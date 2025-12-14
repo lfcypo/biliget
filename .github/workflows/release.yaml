@@ -86,7 +86,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y libssl-dev
-          sudo apt install -y libssl-dev:amd64
 
       - name: Check formatting
         if: matrix.build == 'linux-64bit'
