@@ -16,6 +16,11 @@ mod util;
 fn main() {
     let cli = cli::Cli::parse();
 
+    ctrlc::set_handler(move || {
+        drop_temp_file();
+        std::process::exit(0);
+    }).expect("");
+
     let bvid = match get_bvid_from_url(&cli.url) {
         Some(bvid) => bvid,
         _ => {
@@ -66,20 +71,20 @@ fn main() {
 
     if !cli.only_audio {
         println!("下视频喵...");
+        add_temp_file(&video_temp_file);
         if let Err(e) = download_file(&video_url, &video_temp_file, &headers) {
             eprintln!("{}", e);
             return;
         };
-        add_temp_file(&video_temp_file);
         println!("下完视频喵...");
     }
 
     println!("下音频喵...");
+    add_temp_file(&audio_temp_file);
     if let Err(e) = download_file(&audio_url, &audio_temp_file, &headers) {
         eprintln!("{}", e);
         return;
     };
-    add_temp_file(&audio_temp_file);
     println!("下完音频喵...");
 
     println!("后处理喵...");
