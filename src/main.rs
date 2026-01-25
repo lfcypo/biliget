@@ -19,7 +19,8 @@ fn main() {
     ctrlc::set_handler(move || {
         drop_temp_file();
         std::process::exit(0);
-    }).expect("");
+    })
+    .expect("");
 
     let bvid = match get_bvid_from_url(&cli.url) {
         Some(bvid) => bvid,
