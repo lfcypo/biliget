@@ -1,20 +1,12 @@
+use crate::extract::error::FetchError;
 use crate::util::http::default_http_headers;
 use http::HeaderMap;
 use reqwest;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use thiserror::Error;
 
-#[derive(Debug, Error)]
-pub enum FetchError {
-    #[error("网络请求失败: {0}")]
-    Request(#[from] reqwest::Error),
-
-    #[error("请求头构造失败: {0}")]
-    InvalidHeader(#[from] reqwest::header::InvalidHeaderValue),
-
-    #[error("数据解析失败: 缺少字段 {0}")]
-    ParseError(&'static str),
-}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PlayInfo {}
 
 const BILIBILI_DOWNLOAD_URL_API_URL: &str =
     "https://api.bilibili.com/x/player/playurl?qn=80&fnval=4048&fourk=1&try_look=1";
