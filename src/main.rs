@@ -4,6 +4,7 @@ use crate::extract::bvid::get_bvid_from_url;
 use crate::processer::process::{ProcessOption, process};
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
+use sanitize_filename::sanitize;
 use std::env;
 use std::io;
 
@@ -55,12 +56,13 @@ fn main() {
         }
     };
 
-    let video_temp_file = download_dir.join(format!("{title}-video.tmp"));
-    let audio_temp_file = download_dir.join(format!("{title}-audio.tmp"));
+    let name = sanitize(title);
+    let video_temp_file = download_dir.join(format!("{name}-video.tmp"));
+    let audio_temp_file = download_dir.join(format!("{name}-audio.tmp"));
     let output_file = if cli.only_audio {
-        download_dir.join(format!("{title}.wav"))
+        download_dir.join(format!("{name}.wav"))
     } else {
-        download_dir.join(format!("{title}.mp4"))
+        download_dir.join(format!("{name}.mp4"))
     };
 
     println!("准备下到: {}", output_file.display());
