@@ -1,6 +1,6 @@
 # BiliGet
 
-简单的 B 站视频下载工具 可以免登录下载 B 站高清视频
+简单的 B 站视频下载工具 支持免登录下载 B 站高清视频
 
 灵感来自[share121/unidown](https://github.com/share121/unidown).
 
