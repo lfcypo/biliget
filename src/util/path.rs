@@ -196,6 +196,7 @@ fn has_file_extension(path: &Path) -> bool {
 mod tests {
     use super::*;
     use crate::cli::Cli;
+    use std::env;
 
     fn create_cli_demo(output: Option<String>, only_audio: bool) -> Cli {
         Cli {
@@ -205,14 +206,30 @@ mod tests {
         }
     }
 
+    fn assert_path_ends_with(path: &PathBuf, expected_end: &str) {
+        let path_str = path.to_string_lossy();
+        let expected = if cfg!(windows) {
+            expected_end.replace('/', "\\")
+        } else {
+            expected_end.to_string()
+        };
+
+        assert!(
+            path_str.ends_with(&expected),
+            "Path '{}' does not end with '{}'",
+            path_str,
+            expected
+        );
+    }
+
     #[test]
     fn test_no_output_option() {
         let cli = create_cli_demo(None, false);
         let (output, video_temp, audio_temp) = get_paths("test video", &cli);
 
-        assert!(output.ends_with("test video.mp4"));
-        assert!(video_temp.ends_with("test video-video.tmp"));
-        assert!(audio_temp.ends_with("test video-audio.tmp"));
+        assert_path_ends_with(&output, "test video.mp4");
+        assert_path_ends_with(&video_temp, "test video-video.tmp");
+        assert_path_ends_with(&audio_temp, "test video-audio.tmp");
     }
 
     #[test]
@@ -220,19 +237,22 @@ mod tests {
         let cli = create_cli_demo(None, true);
         let (output, video_temp, audio_temp) = get_paths("test audio", &cli);
 
-        assert!(output.ends_with("test audio.wav"));
-        assert!(video_temp.ends_with("test audio-video.tmp"));
-        assert!(audio_temp.ends_with("test audio-audio.tmp"));
+        assert_path_ends_with(&output, "test audio.wav");
+        assert_path_ends_with(&video_temp, "test audio-video.tmp");
+        assert_path_ends_with(&audio_temp, "test audio-audio.tmp");
     }
 
     #[test]
     fn test_absolute_directory() {
-        let cli = create_cli_demo(Some("/tmp".to_string()), false);
+        let temp_dir = env::temp_dir();
+        let temp_dir_str = temp_dir.to_string_lossy().to_string();
+
+        let cli = create_cli_demo(Some(temp_dir_str), false);
         let (output, video_temp, audio_temp) = get_paths("my video", &cli);
 
-        assert_eq!(output, PathBuf::from("/tmp/my video.mp4"));
-        assert_eq!(video_temp, PathBuf::from("/tmp/my video-video.tmp"));
-        assert_eq!(audio_temp, PathBuf::from("/tmp/my video-audio.tmp"));
+        assert_eq!(output, temp_dir.join("my video.mp4"));
+        assert_eq!(video_temp, temp_dir.join("my video-video.tmp"));
+        assert_eq!(audio_temp, temp_dir.join("my video-audio.tmp"));
     }
 
     #[test]
@@ -240,7 +260,7 @@ mod tests {
         let cli = create_cli_demo(Some("downloads".to_string()), false);
         let (output, video_temp, audio_temp) = get_paths("video title", &cli);
 
-        let current_dir = get_current_dir();
+        let current_dir = env::current_dir().unwrap();
         let expected_dir = current_dir.join("downloads");
         assert_eq!(output, expected_dir.join("video title.mp4"));
         assert_eq!(video_temp, expected_dir.join("video title-video.tmp"));
@@ -249,12 +269,16 @@ mod tests {
 
     #[test]
     fn test_absolute_file_with_extension() {
-        let cli = create_cli_demo(Some("/tmp/output.mp4".to_string()), false);
+        let temp_dir = env::temp_dir();
+        let output_path = temp_dir.join("output.mp4");
+        let output_path_str = output_path.to_string_lossy().to_string();
+
+        let cli = create_cli_demo(Some(output_path_str), false);
         let (output, video_temp, audio_temp) = get_paths("ignored title", &cli);
 
-        assert_eq!(output, PathBuf::from("/tmp/output.mp4"));
-        assert_eq!(video_temp, PathBuf::from("/tmp/output-video.tmp"));
-        assert_eq!(audio_temp, PathBuf::from("/tmp/output-audio.tmp"));
+        assert_eq!(output, output_path);
+        assert_eq!(video_temp, temp_dir.join("output-video.tmp"));
+        assert_eq!(audio_temp, temp_dir.join("output-audio.tmp"));
     }
 
     #[test]
@@ -262,10 +286,36 @@ mod tests {
         let cli = create_cli_demo(Some("videos/output.mp4".to_string()), false);
         let (output, video_temp, audio_temp) = get_paths("ignored", &cli);
 
-        let current_dir = get_current_dir();
+        let current_dir = env::current_dir().unwrap();
         let expected_output_dir = current_dir.join("videos");
         assert_eq!(output, expected_output_dir.join("output.mp4"));
         assert_eq!(video_temp, expected_output_dir.join("output-video.tmp"));
         assert_eq!(audio_temp, expected_output_dir.join("output-audio.tmp"));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn test_windows_absolute_path() {
+        use std::path::MAIN_SEPARATOR_STR;
+
+        let windows_path = format!(
+            "C:{}Users{}test{}output.mp4",
+            MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR
+        );
+        let cli = create_cli_demo(Some(windows_path.clone()), false);
+        let (output, video_temp, audio_temp) = get_paths("ignored", &cli);
+
+        let expected_video = format!(
+            "C:{}Users{}test{}output-video.tmp",
+            MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR
+        );
+        let expected_audio = format!(
+            "C:{}Users{}test{}output-audio.tmp",
+            MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR
+        );
+
+        assert_eq!(output, PathBuf::from(&windows_path));
+        assert_eq!(video_temp, PathBuf::from(expected_video));
+        assert_eq!(audio_temp, PathBuf::from(expected_audio));
     }
 }
