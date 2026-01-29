@@ -15,10 +15,6 @@ env:
 jobs:
   format:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        build: [linux-64bit]
-        target: [x86_64-unknown-linux-gnu]
 
     steps:
       - name: Checkout Code
@@ -27,7 +23,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: "linux-64bit"
           toolchain: stable
           components: rustfmt
 
@@ -38,20 +34,16 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-linux-64bit-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo-
+            ${{ runner.os }}-linux-64bit-cargo-
 
       - name: Check formatting
-        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
+        if: env.IS_WIP == 'false'
         run: cargo fmt --check
 
   clippy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        build: [linux-64bit]
-        target: [x86_64-unknown-linux-gnu]
 
     steps:
       - name: Checkout Code
@@ -60,7 +52,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: linux-64bit
           toolchain: stable
           components: clippy
 
@@ -71,20 +63,16 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-linux-64bit-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo-
+            ${{ runner.os }}-linux-64bit-cargo-
 
       - name: Clippy lint
-        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
-        run: cargo clippy --all-targets --all-features --target ${{ matrix.target }} -- -D warnings
+        if: env.IS_WIP == 'false'
+        run: cargo clippy --all-targets --all-features --target linux-64bit -- -D warnings
 
   testing:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        build: [linux-64bit]
-        target: [x86_64-unknown-linux-gnu]
 
     steps:
       - name: Checkout Code
@@ -93,7 +81,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: linux-64bit
           toolchain: stable
           components: clippy, rustfmt
 
@@ -104,10 +92,10 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-linux-64bit-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo-
+            ${{ runner.os }}-linux-64bit-cargo-
 
       - name: Run tests
-        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
-        run: cargo test --verbose --target ${{ matrix.target }}
+        if: env.IS_WIP == 'false'
+        run: cargo test --verbose --target linux-64bit
