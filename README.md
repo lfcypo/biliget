@@ -38,6 +38,12 @@ brew install ffmpeg
 ./biliget [url] -a
 ```
 
+指定下载位置：可以指定目标路径或目标文件名 支持绝对路径和相对路径
+
+```shell
+./biliget [url] -o [path]
+```
+
 ## 编译与构建
 
 GitHub Action 会自动编译构建并发布至[Release页面](https://github.com/lfcypo/biliget/releases)
