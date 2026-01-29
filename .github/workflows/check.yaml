@@ -69,7 +69,7 @@ jobs:
 
       - name: Clippy lint
         if: env.IS_WIP == 'false'
-        run: cargo clippy --all-targets --all-features --target linux-64bit -- -D warnings
+        run: cargo clippy --all-targets --all-features --target x86_64-unknown-linux-gnu -- -D warnings
 
   testing:
     runs-on: ubuntu-latest
@@ -97,4 +97,4 @@ jobs:
 
       - name: Run tests
         if: env.IS_WIP == 'false'
-        run: cargo test --verbose --target linux-64bit
+        run: cargo test --verbose --target x86_64-unknown-linux-gnu
