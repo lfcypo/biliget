@@ -9,4 +9,8 @@ pub struct Cli {
     /// 仅下载音频
     #[arg(short = 'a', long = "audio", default_value_t = false)]
     pub only_audio: bool,
+
+    /// 下载位置
+    #[arg(short = 'o', long = "output")]
+    pub output: Option<String>,
 }
