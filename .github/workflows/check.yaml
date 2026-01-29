@@ -23,7 +23,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: "linux-64bit"
+          targets: "x86_64-unknown-linux-gnu"
           toolchain: stable
           components: rustfmt
 
@@ -52,7 +52,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: linux-64bit
+          targets: "x86_64-unknown-linux-gnu"
           toolchain: stable
           components: clippy
 
@@ -81,9 +81,8 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: linux-64bit
+          targets: "x86_64-unknown-linux-gnu"
           toolchain: stable
-          components: clippy, rustfmt
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v5
