@@ -1,0 +1,143 @@
+name: Check
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build: [linux-64bit]
+        target: [x86_64-unknown-linux-gnu]
+
+    env:
+      IS_WIP: ${{
+        github.event_name == 'push' &&
+        (contains(github.event.head_commit.message, 'WIP') ||
+        contains(github.event.head_commit.message, 'wip')) ||
+        github.event_name == 'pull_request' &&
+        (contains(github.event.pull_request.title, 'WIP') ||
+        contains(github.event.pull_request.title, 'wip')) ||
+        'false'
+    }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable
+          components: rustfmt
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cargo-
+
+      - name: Check formatting
+        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
+        run: cargo fmt --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build: [linux-64bit]
+        target: [x86_64-unknown-linux-gnu]
+
+    env:
+      IS_WIP: ${{
+        github.event_name == 'push' &&
+        (contains(github.event.head_commit.message, 'WIP') ||
+        contains(github.event.head_commit.message, 'wip')) ||
+        github.event_name == 'pull_request' &&
+        (contains(github.event.pull_request.title, 'WIP') ||
+        contains(github.event.pull_request.title, 'wip')) ||
+        'false'
+    }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable
+          components: clippy
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cargo-
+
+      - name: Clippy lint
+        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
+        run: cargo clippy --all-targets --all-features --target ${{ matrix.target }} -- -D warnings
+
+  testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build: [linux-64bit]
+        target: [x86_64-unknown-linux-gnu]
+
+    env:
+      IS_WIP: ${{
+        github.event_name == 'push' &&
+        (contains(github.event.head_commit.message, 'WIP') ||
+        contains(github.event.head_commit.message, 'wip')) ||
+        github.event_name == 'pull_request' &&
+        (contains(github.event.pull_request.title, 'WIP') ||
+        contains(github.event.pull_request.title, 'wip')) ||
+        'false'
+    }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          toolchain: stable
+          components: clippy, rustfmt
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cargo-
+
+      - name: Run tests
+        if: matrix.build == 'linux-64bit' && env.IS_WIP == 'false'
+        run: cargo test --verbose --target ${{ matrix.target }}
