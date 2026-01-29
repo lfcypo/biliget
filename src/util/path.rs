@@ -206,7 +206,7 @@ mod tests {
         }
     }
 
-    fn assert_path_ends_with(path: &PathBuf, expected_end: &str) {
+    fn assert_path_ends_with(path: &Path, expected_end: &str) {
         let path_str = path.to_string_lossy();
         let expected = if cfg!(windows) {
             expected_end.replace('/', "\\")
