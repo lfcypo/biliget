@@ -1,4 +1,3 @@
-use std::fmt::Debug;
 use crate::util::size_fmt::format_size;
 use crate::util::space::check_free_space;
 use fast_down::file::{FilePusher, MmapFilePusher};
@@ -9,6 +8,7 @@ use fast_down::utils::{FastDownPuller, FastDownPullerOptions, build_client};
 use fast_down::{BoxPusher, Event, Total, multi, single};
 use http::HeaderMap;
 use parking_lot::Mutex;
+use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time;

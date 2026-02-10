@@ -1,4 +1,3 @@
-use std::error::Error;
 use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
@@ -6,6 +5,7 @@ use crate::processer::process::{ProcessOption, process};
 use crate::util::path::get_paths;
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
+use std::error::Error;
 use tokio::io::AsyncBufReadExt;
 
 mod cli;
@@ -91,14 +91,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             if let Err(e) = audio_result {
                 eprintln!("音频下载失败");
-                return Err(Box::from(e))
+                return Err(Box::from(e));
             }
             println!("下完音频喵...");
         }
         None => {
             if let Err(e) = download_audio_task.await {
                 eprintln!("音频下载失败");
-                return Err(Box::from(e))
+                return Err(Box::from(e));
             }
             println!("下完音频喵...");
         }
