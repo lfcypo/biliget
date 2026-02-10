@@ -1,3 +1,4 @@
+use std::error::Error;
 use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
@@ -14,7 +15,7 @@ mod processer;
 mod util;
 
 #[tokio::main]
-async fn main() -> Result<(), ()> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let cli = cli::Cli::parse();
 
     // TODO ctrl+c 时删除临时文件再退出
@@ -28,14 +29,14 @@ async fn main() -> Result<(), ()> {
         Some(bvid) => bvid,
         _ => {
             println!("获取bvid失败喵");
-            return Ok(());
+            return Err(Box::from("获取bvid失败".to_string()));
         }
     };
     let (video_url, audio_url, mut title, headers) = match get_download_url(&bvid).await {
         Ok(data) => data,
         Err(e) => {
             eprintln!("{}", e);
-            return Ok(());
+            return Err(Box::from(e));
         }
     };
     title = if title.is_empty() {
@@ -82,21 +83,22 @@ async fn main() -> Result<(), ()> {
             let (video_result, audio_result) = tokio::join!(video_task, download_audio_task);
 
             if let Err(e) = video_result {
-                eprintln!("视频下载失败: {}", e);
+                eprintln!("视频下载失败");
+                return Err(Box::from(e));
             } else {
                 println!("下完视频喵...");
             }
 
             if let Err(e) = audio_result {
-                eprintln!("音频下载失败: {}", e);
-                return Ok(());
+                eprintln!("音频下载失败");
+                return Err(Box::from(e))
             }
             println!("下完音频喵...");
         }
         None => {
             if let Err(e) = download_audio_task.await {
-                eprintln!("音频下载失败: {}", e);
-                return Ok(());
+                eprintln!("音频下载失败");
+                return Err(Box::from(e))
             }
             println!("下完音频喵...");
         }
