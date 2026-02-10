@@ -1,6 +1,6 @@
 [package]
 name = "biliget"
-version = "0.6.1"
+version = "0.6.3"
 edition = "2024"
 readme = "README.md"
 description = "简单的B站视频下载工具 支持免登录下载B站高清视频"
