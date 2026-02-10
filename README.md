@@ -22,7 +22,25 @@ brew install ffmpeg
 
 在 Linux 系统上，您也可以使用您喜爱的方式进行安装。
 
-### 下载
+### 安装
+
+#### 使用预编译版本
+
+请前往[Release页面](https://github.com/lfcypo/biliget/releases)下载符合您平台的安装包。
+
+#### Cargo Install
+
+本项目已发布至[crates.io](https://crates.io/)，您可以使用以下命令进行安装
+
+```shell
+cargo install biliget
+```
+
+#### 源码编译
+
+请参考 [编译与构建](https://github.com/lfcypo/biliget?tab=readme-ov-file#%E7%BC%96%E8%AF%91%E4%B8%8E%E6%9E%84%E5%BB%BA)。
+
+### 下载视频
 
 默认模式：自动合并音视频为一个`.mp4`视频文件
 
@@ -36,10 +54,12 @@ brew install ffmpeg
 ./biliget [url] -a
 ```
 
-指定下载位置：可以指定目标路径或目标文件名 支持绝对路径和相对路径
+指定下载位置：可以指定目标路径或目标文件名 支持绝对路径和相对路径。
+
+程序会自动根据指定的后缀推断多媒体文件格式。
 
 ```shell
-./biliget [url] -o [path]
+./biliget [url] -o [filename or path]
 ```
 
 ## 编译与构建
@@ -53,7 +73,6 @@ GitHub Action 会自动编译构建并发布至[Release页面](https://github.co
 ```shell
 git clone https://github.com/lfcypo/biliget.git
 cd biliget
-cargo update
 cargo build --release
 ```
 
