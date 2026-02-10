@@ -3,6 +3,9 @@ use sanitize_filename::sanitize;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+const VIDEO_FILE_EXTENSION: [&str; 5] = ["mp4", "mkv", "avi", "mov", "wmv"];
+const AUDIO_FILE_EXTENSION: [&str; 6] = ["wav", "mp3", "ogg", "m4a", "flac", "aac"];
+
 fn get_current_dir() -> PathBuf {
     std::env::current_dir().unwrap_or_else(|err| {
         println!("获取运行目录失败喵: {err}");
@@ -10,23 +13,37 @@ fn get_current_dir() -> PathBuf {
     })
 }
 
-fn get_temp_paths(base_dir: &Path, file_name: &str) -> (PathBuf, PathBuf) {
-    let name = if let Some((before_dot, _)) = file_name.split_once('.') {
-        before_dot
-    } else {
-        file_name
+fn get_file_name(file_name: &str, is_audio: bool) -> (String, String) {
+    let default_extension = if is_audio { "wav" } else { "mp4" };
+    if file_name.contains(".") {
+        let extension = file_name.split('.').next_back().unwrap();
+        if VIDEO_FILE_EXTENSION.contains(&file_name.split('.').next_back().unwrap())
+            || AUDIO_FILE_EXTENSION.contains(&file_name.split('.').next_back().unwrap())
+        {
+            // 有合法的媒体文件扩展名
+            return (
+                file_name
+                    .rsplit_once('.')
+                    .map(|(before, _)| before)
+                    .unwrap_or(file_name)
+                    .to_string(),
+                extension.to_string(),
+            );
+        }
     };
+    (file_name.to_string(), default_extension.to_string())
+}
+
+fn get_temp_paths(base_dir: &Path, file_name: &str) -> (PathBuf, PathBuf) {
+    let (name, _) = get_file_name(file_name, false);
     let video_temp_file = base_dir.join(format!("{name}-video.tmp"));
     let audio_temp_file = base_dir.join(format!("{name}-audio.tmp"));
     (video_temp_file, audio_temp_file)
 }
 
 fn get_output_file(base_dir: &Path, file_name: &str, is_audio: bool) -> PathBuf {
-    if file_name.contains(".") {
-        return base_dir.join(file_name);
-    }
-    let extension = if is_audio { "wav" } else { "mp4" };
-    base_dir.join(format!("{file_name}.{extension}"))
+    let (name, extension) = get_file_name(file_name, is_audio);
+    base_dir.join(format!("{name}.{extension}"))
 }
 
 pub fn get_paths(title: &str, cmd_option: &Cli) -> (PathBuf, PathBuf, PathBuf) {

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::util::size_fmt::format_size;
 use crate::util::space::check_free_space;
 use fast_down::file::{FilePusher, MmapFilePusher};
@@ -153,8 +154,8 @@ pub async fn download_file(
 
     while let Ok(e) = result.event_chain.recv().await {
         match e {
-            Event::PullError(_, _) => {
-                return Err(DownloadError::RequestError("请求失败".to_string()));
+            Event::PullError(_, err) => {
+                return Err(DownloadError::RequestError(format!("{:?}", err)));
             }
             Event::PushError(_, _) | Event::FlushError(_) => {
                 return Err(DownloadError::WriteError("写入文件失败".to_string()));
