@@ -20,12 +20,14 @@ const BILIBILI_DOWNLOAD_URL_API_URL: &str =
     "https://api.bilibili.com/x/player/playurl?qn=80&fnval=4048&fourk=1&try_look=1";
 const BILIBILI_INFO_API_URL: &str = "https://api.bilibili.com/x/player/pagelist";
 
-fn get_info(client: &reqwest::blocking::Client, bvid: &str) -> Result<(i64, String), FetchError> {
+async fn get_info(client: &reqwest::Client, bvid: &str) -> Result<(i64, String), FetchError> {
     let json: Value = client
         .get(BILIBILI_INFO_API_URL)
         .query(&[("bvid", bvid)])
-        .send()?
-        .json()?;
+        .send()
+        .await?
+        .json()
+        .await?;
 
     let cid = if let Some(cid) = json["data"][0]["cid"].as_i64() {
         cid
@@ -42,24 +44,28 @@ fn get_info(client: &reqwest::blocking::Client, bvid: &str) -> Result<(i64, Stri
     Ok((cid, title))
 }
 
-pub fn get_download_url(bvid: &str) -> Result<(String, String, String, HeaderMap), FetchError> {
+pub async fn get_download_url(
+    bvid: &str,
+) -> Result<(String, String, String, HeaderMap), FetchError> {
     let referrer = format!("https://www.bilibili.com/video/{bvid}");
     let mut headers = default_http_headers();
     headers.insert("referer", referrer.parse()?);
     headers.insert("origin", "https://www.bilibili.com".parse()?);
 
-    let client = reqwest::blocking::Client::builder()
+    let client = reqwest::Client::builder()
         .default_headers(headers.clone())
         .build()?;
 
-    let (cid, title) = get_info(&client, bvid)?;
+    let (cid, title) = get_info(&client, bvid).await?;
 
     let json: Value = client
         .get(BILIBILI_DOWNLOAD_URL_API_URL)
         .query(&[("bvid", bvid)])
         .query(&[("cid", cid)])
-        .send()?
-        .json()?;
+        .send()
+        .await?
+        .json()
+        .await?;
 
     let video_url = if let Some(video_url) = json["data"]["dash"]["video"][0]["baseUrl"].as_str() {
         video_url.to_string()
