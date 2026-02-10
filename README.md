@@ -2,8 +2,6 @@
 
 简单的 B 站视频下载工具 支持免登录下载 B 站高清视频
 
-灵感来自[share121/unidown](https://github.com/share121/unidown).
-
 ## 使用
 
 ### 使用前
@@ -64,8 +62,7 @@ cargo build --release
 ## 待实现的功能
 
 - :white_check_mark: GitHub Action 自动构建与发布
-- 多线程下载
-- 多视频平台下载
+- :white_check_mark: 多线程下载
 - 字幕、弹幕下载
 
 ## 常见问题
@@ -85,5 +82,4 @@ zsh: parse error near `&'
 ## 致谢
 
 - [share121/unidown](https://github.com/share121/unidown)
-
-[share121](https://github.com/share121)是一个优秀的 Rust 开发者，让我领略到了 Rust 语言的魅力，并针对本项目提供了诸多建议。
+- [fast-down/core](https://github.com/fast-down/core) 多线程下载由`fast-down`强劲驱动
