@@ -12,6 +12,7 @@ use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time;
+use std::time::Duration;
 use thiserror::Error;
 use tokio::fs;
 use tokio::fs::OpenOptions;
@@ -19,8 +20,6 @@ use url::Url;
 
 const MAX_RETRY_TIMES: usize = 3;
 const RETRY_DURATION: time::Duration = time::Duration::from_millis(500);
-
-const PROXY: &str = "";
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error)]
@@ -62,7 +61,7 @@ pub async fn download_file(
     let url = Url::parse(url)?;
     let parent = dest.parent().ok_or(DownloadError::FilePathError())?;
 
-    let client = build_client(headers, PROXY, false, false)
+    let client = build_client(headers, None, false, false, None)
         .map_err(|err| DownloadError::RequestError(err.to_string()))?;
 
     let mut retry_times = 0;
@@ -96,13 +95,13 @@ pub async fn download_file(
 
     let puller = FastDownPuller::new(FastDownPullerOptions {
         url: info.final_url,
-        proxy: PROXY,
-        multiplexing: false,
+        proxy: None,
         headers: Arc::new(headers.clone()),
         accept_invalid_certs: false,
         accept_invalid_hostnames: false,
         file_id: info.file_id.clone(),
         resp: Some(Arc::new(Mutex::new(Some(resp)))),
+        available_ips: Arc::from([]),
     })
     .map_err(|err| DownloadError::RequestError(err.to_string()))?;
     if let Err(err) = fs::create_dir_all(parent).await {
@@ -117,11 +116,13 @@ pub async fn download_file(
             puller,
             pusher,
             multi::DownloadOptions {
-                download_chunks: download_chunks.iter(),
+                download_chunks: download_chunks.into_iter(),
                 retry_gap: RETRY_DURATION,
                 concurrent: threads,
                 push_queue_cap,
                 min_chunk_size: 8 * 1024,
+                pull_timeout: Duration::from_millis(5000),
+                max_speculative: 3,
             },
         )
     } else {
