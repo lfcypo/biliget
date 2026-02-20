@@ -22,6 +22,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 .idea
-.mp4
-.wav
-.tmp
+*.mp4
+*.wav
+*.tmp
