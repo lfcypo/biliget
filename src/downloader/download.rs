@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time;
 use std::time::Duration;
+use fast_down::utils::Proxy::System;
 use thiserror::Error;
 use tokio::fs;
 use tokio::fs::OpenOptions;
@@ -61,7 +62,7 @@ pub async fn download_file(
     let url = Url::parse(url)?;
     let parent = dest.parent().ok_or(DownloadError::FilePathError())?;
 
-    let client = build_client(headers, None, false, false, None)
+    let client = build_client(headers, System, false, false, None)
         .map_err(|err| DownloadError::RequestError(err.to_string()))?;
 
     let mut retry_times = 0;
@@ -95,7 +96,7 @@ pub async fn download_file(
 
     let puller = FastDownPuller::new(FastDownPullerOptions {
         url: info.final_url,
-        proxy: None,
+        proxy: System,
         headers: Arc::new(headers.clone()),
         accept_invalid_certs: false,
         accept_invalid_hostnames: false,
