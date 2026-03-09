@@ -100,5 +100,5 @@ zsh: parse error near `&'
 
 ## 致谢
 
-- [share121/unidown](https://github.com/share121/unidown)
+- share121/unidown
 - [fast-down/core](https://github.com/fast-down/core) 多线程下载由`fast-down`强劲驱动
