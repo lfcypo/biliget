@@ -7,7 +7,8 @@ use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
 use std::error::Error;
 use tokio::fs::remove_file;
-use tokio::io::AsyncBufReadExt;
+use tokio::io;
+use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio_util::sync::CancellationToken;
 
 mod cli;
@@ -63,13 +64,18 @@ async fn main() {
     }
 
     println!("按回车继续喵...");
-    let mut stdin = tokio::io::BufReader::new(tokio::io::stdin());
+    let mut stdin = BufReader::new(io::stdin());
     let mut input = String::new();
-    stdin.read_line(&mut input).await.unwrap();
+    tokio::select! {
+        _ = stdin.read_line(&mut input) => {},
+        () = cancel.cancelled() => {
+            return exit_ok();
+        }
+    }
 
-    println!();
+    not_cancelled_println!(cancel);
 
-    println!("开始下载喵...");
+    not_cancelled_println!(cancel, "开始下载喵...");
 
     let download_video_task = if !cli.only_audio {
         Some(async {
