@@ -1,3 +1,4 @@
+pub mod header;
 pub mod http;
 pub mod path;
 pub mod size_fmt;

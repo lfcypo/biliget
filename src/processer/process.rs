@@ -1,6 +1,7 @@
 use crate::processer::ffmpeg::{FfmpegError, convert_audio, merge_video};
 use std::path::Path;
 use thiserror::Error;
+use tokio_util::sync::CancellationToken;
 
 pub(crate) struct ProcessOption<'a> {
     pub video_file: Option<&'a Path>,
@@ -10,34 +11,66 @@ pub(crate) struct ProcessOption<'a> {
     pub only_audio: bool,
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error)]
 pub enum ProcessError {
+    #[error("参数错误")]
+    ParamError(),
+
     #[error("后处理错误")]
     ProcessError(#[from] FfmpegError),
+
+    #[error("操作已取消")]
+    Cancelled(),
 }
 
-pub fn process(option: ProcessOption) -> Result<(), ProcessError> {
+pub async fn process(
+    option: ProcessOption<'_>,
+    cancel: CancellationToken,
+) -> Result<(), ProcessError> {
     if option.only_audio {
-        process_only_audio(option.audio_file.unwrap(), option.output_file)?
+        process_only_audio(
+            option.audio_file.ok_or_else(ProcessError::ParamError)?,
+            option.output_file,
+            cancel,
+        )
+        .await?
     } else {
         process_default(
-            Path::new(&option.video_file.unwrap()),
-            Path::new(&option.audio_file.unwrap()),
+            Path::new(&option.video_file.ok_or_else(ProcessError::ParamError)?),
+            Path::new(&option.audio_file.ok_or_else(ProcessError::ParamError)?),
             Path::new(&option.output_file),
-        )?
+            cancel,
+        )
+        .await?
     }
 
     Ok(())
 }
 
-fn process_default(
+async fn process_default(
     video_file: &Path,
     audio_file: &Path,
     output_file: &Path,
+    cancel: CancellationToken,
 ) -> Result<(), ProcessError> {
-    Ok(merge_video(video_file, audio_file, output_file)?)
+    merge_video(video_file, audio_file, output_file, cancel)
+        .await
+        .map_err(|e| match e {
+            FfmpegError::Cancelled => ProcessError::Cancelled(),
+            _ => ProcessError::ProcessError(e),
+        })
 }
 
-fn process_only_audio(audio_file: &Path, output_file: &Path) -> Result<(), ProcessError> {
-    Ok(convert_audio(audio_file, output_file)?)
+async fn process_only_audio(
+    audio_file: &Path,
+    output_file: &Path,
+    cancel: CancellationToken,
+) -> Result<(), ProcessError> {
+    convert_audio(audio_file, output_file, cancel)
+        .await
+        .map_err(|e| match e {
+            FfmpegError::Cancelled => ProcessError::Cancelled(),
+            _ => ProcessError::ProcessError(e),
+        })
 }

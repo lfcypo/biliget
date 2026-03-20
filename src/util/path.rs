@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 const VIDEO_FILE_EXTENSION: [&str; 5] = ["mp4", "mkv", "avi", "mov", "wmv"];
 const AUDIO_FILE_EXTENSION: [&str; 6] = ["wav", "mp3", "ogg", "m4a", "flac", "aac"];
+const BILIGET_TEMP_SUFFIX: &str = "bgtmp";
 
 fn get_current_dir() -> PathBuf {
     std::env::current_dir().unwrap_or_else(|err| {
@@ -36,8 +37,8 @@ fn get_file_name(file_name: &str, is_audio: bool) -> (String, String) {
 
 fn get_temp_paths(base_dir: &Path, file_name: &str) -> (PathBuf, PathBuf) {
     let (name, _) = get_file_name(file_name, false);
-    let video_temp_file = base_dir.join(format!("{name}-video.tmp"));
-    let audio_temp_file = base_dir.join(format!("{name}-audio.tmp"));
+    let video_temp_file = base_dir.join(format!("{name}-video.{BILIGET_TEMP_SUFFIX}"));
+    let audio_temp_file = base_dir.join(format!("{name}-audio.{BILIGET_TEMP_SUFFIX}"));
     (video_temp_file, audio_temp_file)
 }
 
@@ -245,8 +246,8 @@ mod tests {
         let (output, video_temp, audio_temp) = get_paths("test video", &cli);
 
         assert_path_ends_with(&output, "test video.mp4");
-        assert_path_ends_with(&video_temp, "test video-video.tmp");
-        assert_path_ends_with(&audio_temp, "test video-audio.tmp");
+        assert_path_ends_with(&video_temp, "test video-video.bgtmp");
+        assert_path_ends_with(&audio_temp, "test video-audio.bgtmp");
     }
 
     #[test]
@@ -255,8 +256,8 @@ mod tests {
         let (output, video_temp, audio_temp) = get_paths("test audio", &cli);
 
         assert_path_ends_with(&output, "test audio.wav");
-        assert_path_ends_with(&video_temp, "test audio-video.tmp");
-        assert_path_ends_with(&audio_temp, "test audio-audio.tmp");
+        assert_path_ends_with(&video_temp, "test audio-video.bgtmp");
+        assert_path_ends_with(&audio_temp, "test audio-audio.bgtmp");
     }
 
     #[test]
@@ -268,8 +269,8 @@ mod tests {
         let (output, video_temp, audio_temp) = get_paths("my video", &cli);
 
         assert_eq!(output, temp_dir.join("my video.mp4"));
-        assert_eq!(video_temp, temp_dir.join("my video-video.tmp"));
-        assert_eq!(audio_temp, temp_dir.join("my video-audio.tmp"));
+        assert_eq!(video_temp, temp_dir.join("my video-video.bgtmp"));
+        assert_eq!(audio_temp, temp_dir.join("my video-audio.bgtmp"));
     }
 
     #[test]
@@ -280,8 +281,8 @@ mod tests {
         let current_dir = env::current_dir().unwrap();
         let expected_dir = current_dir.join("downloads");
         assert_eq!(output, expected_dir.join("video title.mp4"));
-        assert_eq!(video_temp, expected_dir.join("video title-video.tmp"));
-        assert_eq!(audio_temp, expected_dir.join("video title-audio.tmp"));
+        assert_eq!(video_temp, expected_dir.join("video title-video.bgtmp"));
+        assert_eq!(audio_temp, expected_dir.join("video title-audio.bgtmp"));
     }
 
     #[test]
@@ -294,8 +295,8 @@ mod tests {
         let (output, video_temp, audio_temp) = get_paths("ignored title", &cli);
 
         assert_eq!(output, output_path);
-        assert_eq!(video_temp, temp_dir.join("output-video.tmp"));
-        assert_eq!(audio_temp, temp_dir.join("output-audio.tmp"));
+        assert_eq!(video_temp, temp_dir.join("output-video.bgtmp"));
+        assert_eq!(audio_temp, temp_dir.join("output-audio.bgtmp"));
     }
 
     #[test]
@@ -306,8 +307,8 @@ mod tests {
         let current_dir = env::current_dir().unwrap();
         let expected_output_dir = current_dir.join("videos");
         assert_eq!(output, expected_output_dir.join("output.mp4"));
-        assert_eq!(video_temp, expected_output_dir.join("output-video.tmp"));
-        assert_eq!(audio_temp, expected_output_dir.join("output-audio.tmp"));
+        assert_eq!(video_temp, expected_output_dir.join("output-video.bgtmp"));
+        assert_eq!(audio_temp, expected_output_dir.join("output-audio.bgtmp"));
     }
 
     #[cfg(target_os = "windows")]
@@ -323,11 +324,11 @@ mod tests {
         let (output, video_temp, audio_temp) = get_paths("ignored", &cli);
 
         let expected_video = format!(
-            "C:{}Users{}test{}output-video.tmp",
+            "C:{}Users{}test{}output-video.bgtmp",
             MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR
         );
         let expected_audio = format!(
-            "C:{}Users{}test{}output-audio.tmp",
+            "C:{}Users{}test{}output-audio.bgtmp",
             MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR, MAIN_SEPARATOR_STR
         );
 

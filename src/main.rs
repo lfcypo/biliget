@@ -1,42 +1,47 @@
 use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
-use crate::processer::process::{ProcessOption, process};
+use crate::processer::process::{ProcessError, ProcessOption, process};
 use crate::util::path::get_paths;
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
 use std::error::Error;
+use tokio::fs::remove_file;
 use tokio::io::AsyncBufReadExt;
+use tokio_util::sync::CancellationToken;
 
 mod cli;
 mod downloader;
 mod extract;
+mod macros;
 mod processer;
 mod util;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() {
     let cli = cli::Cli::parse();
 
-    // TODO ctrl+c 时删除临时文件再退出
-    // ctrlc::set_handler(move || {
-    //     drop_temp_file();
-    //     std::process::exit(0);
-    // })
-    //     .expect("Error setting Ctrl-C handler");
+    let cancel = CancellationToken::new();
+
+    let cancel_clone = cancel.clone();
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c().await.unwrap();
+        println!("退出程序喵...");
+        cancel_clone.cancel();
+    });
 
     let bvid = match get_bvid_from_url(&cli.url) {
         Some(bvid) => bvid,
         _ => {
             println!("获取bvid失败喵");
-            return Err(Box::from("获取bvid失败".to_string()));
+            return exit_err(Box::from("获取bvid失败".to_string()));
         }
     };
     let (video_url, audio_url, mut title, headers) = match get_download_url(&bvid).await {
         Ok(data) => data,
         Err(e) => {
             eprintln!("{}", e);
-            return Err(Box::from(e));
+            return exit_err(Box::from(e));
         }
     };
     title = if title.is_empty() {
@@ -53,6 +58,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (output_file, video_temp_file, audio_temp_file) = get_paths(&title, &cli);
     println!("准备下到: {}", output_file.display());
 
+    if output_file.try_exists().unwrap_or(false) {
+        println!("注意喵！目标文件已存在 继续下载将覆盖同名文件");
+    }
+
     println!("按回车继续喵...");
     let mut stdin = tokio::io::BufReader::new(tokio::io::stdin());
     let mut input = String::new();
@@ -64,18 +73,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let download_video_task = if !cli.only_audio {
         Some(async {
-            println!("下视频喵...");
+            not_cancelled_println!(cancel, "下视频喵...");
             add_temp_file(&video_temp_file);
-            download_file(&video_url, &video_temp_file, &headers).await
+            download_file(&video_url, &video_temp_file, &headers, cancel.clone()).await
         })
     } else {
         None
     };
 
     let download_audio_task = async {
-        println!("下音频喵...");
+        not_cancelled_println!(cancel, "下音频喵...");
         add_temp_file(&audio_temp_file);
-        download_file(&audio_url, &audio_temp_file, &headers).await
+        download_file(&audio_url, &audio_temp_file, &headers, cancel.clone()).await
     };
 
     match download_video_task {
@@ -84,27 +93,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             if let Err(e) = video_result {
                 eprintln!("视频下载失败");
-                return Err(Box::from(e));
+                return exit_err(Box::from(e));
             } else {
-                println!("下完视频喵...");
+                not_cancelled_println!(cancel, "下完视频喵...");
             }
 
             if let Err(e) = audio_result {
                 eprintln!("音频下载失败");
-                return Err(Box::from(e));
+                return exit_err(Box::from(e));
             }
-            println!("下完音频喵...");
+            not_cancelled_println!(cancel, "下完音频喵...");
         }
         None => {
             if let Err(e) = download_audio_task.await {
                 eprintln!("音频下载失败");
-                return Err(Box::from(e));
+                return exit_err(Box::from(e));
             }
-            println!("下完音频喵...");
+            not_cancelled_println!(cancel, "下完音频喵...");
         }
     }
 
-    println!("后处理喵...");
     let process_option = ProcessOption {
         video_file: if cli.only_audio {
             None
@@ -115,21 +123,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
         output_file: &output_file,
         only_audio: cli.only_audio,
     };
-    if let Err(e) = process(process_option) {
-        eprintln!("{}", e);
-        return Ok(());
-    };
-    println!("后处理结束喵...");
+    if let Err(e) = process(process_option, cancel.clone()).await {
+        match e {
+            ProcessError::Cancelled() => {
+                if !output_file.try_exists().unwrap_or(false) {
+                    exit_ok();
+                }
+                if let Err(e) = remove_file(&output_file).await {
+                    exit_err(Box::from(e))
+                }
+            }
+            e => {
+                exit_err(Box::from(e));
+            }
+        }
+    } else {
+        not_cancelled_println!(cancel, "后处理结束喵...");
+    }
 
+    not_cancelled_println!(cancel);
+
+    not_cancelled_println!(cancel, "下到了: {}", output_file.display());
+
+    exit_ok()
+}
+
+fn exit_ok() {
     drop_temp_file();
-    println!("清理喵...");
-
-    println!("搞定喵!");
-
-    println!();
-
-    println!("下到了: {}", output_file.display());
     println!("拜拜喵");
+    std::process::exit(0);
+}
 
-    Ok(())
+fn exit_err(err: Box<dyn Error>) {
+    drop_temp_file();
+    eprintln!("{}", err);
+    std::process::exit(1);
 }
