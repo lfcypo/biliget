@@ -1,9 +1,7 @@
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 
-lazy_static::lazy_static! {
-    static ref TEMP_FILE_LIST: Mutex<Vec<PathBuf>> = Mutex::new(Vec::new());
-}
+static TEMP_FILE_LIST: LazyLock<Mutex<Vec<PathBuf>>> = LazyLock::new(|| Mutex::new(Vec::new()));
 
 pub fn add_temp_file(file: &Path) {
     let mut temp_file_list = TEMP_FILE_LIST.lock().unwrap();
