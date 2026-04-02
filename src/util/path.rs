@@ -14,6 +14,11 @@ fn get_current_dir() -> PathBuf {
     })
 }
 
+/// (output_file, video_temp_file, audio_temp_file)
+pub type Paths = (PathBuf, PathBuf, PathBuf);
+/// (video_temp_file, audio_temp_file)
+pub type TempPaths = (PathBuf, PathBuf);
+
 fn get_file_name(file_name: &str, is_audio: bool) -> (String, String) {
     let default_extension = if is_audio { "wav" } else { "mp4" };
     if file_name.contains(".") {
@@ -35,7 +40,7 @@ fn get_file_name(file_name: &str, is_audio: bool) -> (String, String) {
     (file_name.to_string(), default_extension.to_string())
 }
 
-fn get_temp_paths(base_dir: &Path, file_name: &str) -> (PathBuf, PathBuf) {
+fn get_temp_paths(base_dir: &Path, file_name: &str) -> TempPaths {
     let (name, _) = get_file_name(file_name, false);
     let video_temp_file = base_dir.join(format!("{name}-video.{BILIGET_TEMP_SUFFIX}"));
     let audio_temp_file = base_dir.join(format!("{name}-audio.{BILIGET_TEMP_SUFFIX}"));
@@ -47,7 +52,7 @@ fn get_output_file(base_dir: &Path, file_name: &str, is_audio: bool) -> PathBuf 
     base_dir.join(format!("{name}.{extension}"))
 }
 
-pub fn get_paths(title: &str, cmd_option: &Cli) -> (PathBuf, PathBuf, PathBuf) {
+pub fn get_paths(title: &str, cmd_option: &Cli) -> Paths {
     let sanitized_title = sanitize(title);
 
     if cmd_option.output.is_none() {
@@ -66,11 +71,7 @@ pub fn get_paths(title: &str, cmd_option: &Cli) -> (PathBuf, PathBuf, PathBuf) {
     handle_relative_path(&output_path, &sanitized_title, cmd_option.only_audio)
 }
 
-fn handle_absolute_path(
-    output_path: &PathBuf,
-    title: &str,
-    only_audio: bool,
-) -> (PathBuf, PathBuf, PathBuf) {
+fn handle_absolute_path(output_path: &PathBuf, title: &str, only_audio: bool) -> Paths {
     if output_path.try_exists().is_ok() {
         return if output_path.is_file() {
             let base_dir = output_path.parent().unwrap_or(Path::new("/")).to_path_buf();
@@ -124,11 +125,7 @@ fn handle_absolute_path(
     }
 }
 
-fn handle_relative_path(
-    output_path: &Path,
-    title: &str,
-    only_audio: bool,
-) -> (PathBuf, PathBuf, PathBuf) {
+fn handle_relative_path(output_path: &Path, title: &str, only_audio: bool) -> Paths {
     let abs_output_path = get_current_dir().join(output_path);
 
     if abs_output_path.try_exists().is_ok() {
