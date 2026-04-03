@@ -2,6 +2,7 @@ use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
 use crate::processer::process::{ProcessError, ProcessOption, process};
+use crate::progress::cli_bar::CliProgressBar;
 use crate::util::path::get_paths;
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
@@ -16,6 +17,7 @@ mod downloader;
 mod extract;
 mod macros;
 mod processer;
+mod progress;
 mod util;
 
 #[tokio::main]
@@ -79,18 +81,30 @@ async fn main() {
 
     let download_video_task = if !cli.only_audio {
         Some(async {
-            not_cancelled_println!(cancel, "下视频喵...");
             add_temp_file(&video_temp_file);
-            download_file(&video_url, &video_temp_file, &headers, cancel.clone()).await
+            download_file(
+                &video_url,
+                &video_temp_file,
+                &headers,
+                CliProgressBar::new("下载视频"),
+                cancel.clone(),
+            )
+            .await
         })
     } else {
         None
     };
 
     let download_audio_task = async {
-        not_cancelled_println!(cancel, "下音频喵...");
         add_temp_file(&audio_temp_file);
-        download_file(&audio_url, &audio_temp_file, &headers, cancel.clone()).await
+        download_file(
+            &audio_url,
+            &audio_temp_file,
+            &headers,
+            CliProgressBar::new("下载音频"),
+            cancel.clone(),
+        )
+        .await
     };
 
     match download_video_task {
