@@ -2,6 +2,7 @@ use crate::util::header::to_hashmap;
 use crate::util::size_fmt::format_size;
 use crate::util::space::check_free_space;
 use fast_down_ffi as fd;
+use fast_down_ffi::{Merge, ProgressEntry};
 use http::HeaderMap;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
@@ -22,10 +23,10 @@ pub enum DownloaderError {
     #[error("磁盘空间不足: {0}")]
     InsufficientDiskSpaceError(String),
 
-    #[error("解析url错误: {0}")]
+    #[error("解析 URL 错误: {0}")]
     UrlParseError(#[from] url::ParseError),
 
-    #[error("请求错误")]
+    #[error("下载错误")]
     DownloadError(#[from] fd::Error),
 }
 
@@ -45,7 +46,7 @@ pub async fn download_file(
         ..Default::default()
     };
 
-    let (tx, _rx) = fd::create_channel();
+    let (tx, rx) = fd::create_channel();
     let task = fd::prefetch(url, fd_config, tx).await?;
 
     let disk_usage = task.info.size;
@@ -58,7 +59,22 @@ pub async fn download_file(
         )));
     }
 
-    task.start(PathBuf::from(dest_path), cancel).await?;
+    let dest_path_buf = dest_path.to_path_buf();
+    tokio::spawn(async move {
+        let task = task;
+        let _ = task.start(dest_path_buf, cancel).await;
+    });
+
+    let mut downloading: Vec<ProgressEntry> = Vec::default();
+    while let Ok(event) = rx.recv().await {
+        match event {
+            fd::Event::PushProgress(_, p) => {
+                downloading.merge_progress(p)
+                // progress bar
+            }
+            _ => {}
+        }
+    }
 
     Ok(())
 }
