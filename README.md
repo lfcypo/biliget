@@ -82,8 +82,8 @@ cargo build --release
 
 - :white_check_mark: GitHub Action 自动构建与发布
 - :white_check_mark: 多线程下载
-- 下载进度条显示
-- 合并进度条显示
+- :white_check_mark: 下载进度条显示
+- :white_check_mark: 合并进度条显示
 - 字幕、弹幕下载
 
 ## 常见问题
