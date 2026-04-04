@@ -3,7 +3,7 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::borrow::Cow;
 use std::sync::LazyLock;
 
-static MULTI_PROGRESS: LazyLock<MultiProgress> = LazyLock::new(|| MultiProgress::new());
+static MULTI_PROGRESS: LazyLock<MultiProgress> = LazyLock::new(MultiProgress::new);
 
 pub struct CliProgressBar {
     bar: ProgressBar,
@@ -25,15 +25,19 @@ impl CliProgressBar {
 }
 
 impl Bar for CliProgressBar {
-    async fn update(&mut self, delta: u64) {
+    async fn set_length(&mut self, length: u64) {
+        self.bar.set_length(length);
+    }
+
+    async fn update_progress(&mut self, delta: u64) {
         self.bar.inc(delta);
     }
 
-    async fn finish(&mut self) {
-        self.bar.finish();
+    async fn set_progress(&mut self, progress: u64) {
+        self.bar.set_position(progress)
     }
 
-    async fn set_length(&mut self, length: u64) {
-        self.bar.set_length(length);
+    async fn finish(&mut self) {
+        self.bar.finish_and_clear();
     }
 }

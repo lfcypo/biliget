@@ -70,32 +70,32 @@ pub async fn download_file(
     let mut pending_progress = 0u64;
 
     tokio::select! {
-            res = download_task => {
-                res?;
-            }
-            _ = async {
-                while let Ok(event) = rx.recv().await {
-                    match event {
-                        fd::Event::PushProgress(_, progress_entry) => {
-                            pending_progress += progress_entry.total();
+        res = download_task => {
+            res?;
+        }
+        _ = async {
+            while let Ok(event) = rx.recv().await {
+                match event {
+                    fd::Event::PushProgress(_, progress_entry) => {
+                        pending_progress += progress_entry.total();
 
-                            if last_tick.elapsed() >= TICK_RATE {
-                                progress_bar.update(pending_progress).await;
-                                pending_progress = 0;
-                                last_tick = Instant::now();
-                            }
-                        }
-                        _ => {
-                            continue;
+                        if last_tick.elapsed() >= TICK_RATE {
+                            progress_bar.update_progress(pending_progress).await;
+                            pending_progress = 0;
+                            last_tick = Instant::now();
                         }
                     }
+                    _ => {
+                        continue;
+                    }
                 }
-                if pending_progress > 0 {
-                    progress_bar.update(pending_progress).await;
-                }
-                progress_bar.finish().await;
-            } => {}
-        }
+            }
+            if pending_progress > 0 {
+                progress_bar.update_progress(pending_progress).await;
+            }
+            progress_bar.finish().await;
+        } => {}
+    }
 
     Ok(())
 }

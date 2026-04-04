@@ -18,3 +18,12 @@ macro_rules! not_cancelled_println {
         }
     };
 }
+
+#[macro_export]
+macro_rules! concat_arrays {
+    ($($arr:expr),+ $(,)?) => {{
+        let mut vec = Vec::new();
+        $(vec.extend_from_slice(&$arr);)+
+        vec
+    }};
+}

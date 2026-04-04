@@ -1,4 +1,5 @@
 use crate::processer::ffmpeg::{FfmpegError, convert_audio, merge_video};
+use crate::progress::bar::Bar;
 use std::path::Path;
 use thiserror::Error;
 use tokio_util::sync::CancellationToken;
@@ -26,12 +27,14 @@ pub enum ProcessError {
 
 pub async fn process(
     option: ProcessOption<'_>,
+    progress_bar: impl Bar,
     cancel: CancellationToken,
 ) -> Result<(), ProcessError> {
     if option.only_audio {
         process_only_audio(
             option.audio_file.ok_or_else(ProcessError::ParamError)?,
             option.output_file,
+            progress_bar,
             cancel,
         )
         .await?
@@ -40,6 +43,7 @@ pub async fn process(
             Path::new(&option.video_file.ok_or_else(ProcessError::ParamError)?),
             Path::new(&option.audio_file.ok_or_else(ProcessError::ParamError)?),
             Path::new(&option.output_file),
+            progress_bar,
             cancel,
         )
         .await?
@@ -52,9 +56,10 @@ async fn process_default(
     video_file: &Path,
     audio_file: &Path,
     output_file: &Path,
+    progress_bar: impl Bar,
     cancel: CancellationToken,
 ) -> Result<(), ProcessError> {
-    merge_video(video_file, audio_file, output_file, cancel)
+    merge_video(video_file, audio_file, output_file, progress_bar, cancel)
         .await
         .map_err(|e| match e {
             FfmpegError::Cancelled => ProcessError::Cancelled(),
@@ -65,9 +70,10 @@ async fn process_default(
 async fn process_only_audio(
     audio_file: &Path,
     output_file: &Path,
+    progress_bar: impl Bar,
     cancel: CancellationToken,
 ) -> Result<(), ProcessError> {
-    convert_audio(audio_file, output_file, cancel)
+    convert_audio(audio_file, output_file, progress_bar, cancel)
         .await
         .map_err(|e| match e {
             FfmpegError::Cancelled => ProcessError::Cancelled(),
