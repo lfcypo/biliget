@@ -1,4 +1,4 @@
-use crate::progress::bar::Bar;
+use crate::bar::Bar;
 use crate::util::header::to_hashmap;
 use crate::util::size_fmt::format_size;
 use crate::util::space::check_free_space;

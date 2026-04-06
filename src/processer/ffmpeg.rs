@@ -1,7 +1,7 @@
+use crate::bar::Bar;
 use crate::concat_arrays;
 use crate::processer::ffmpeg::FfmpegError::FileNameError;
 use crate::processer::progress_bar::FfmpegProgress;
-use crate::progress::bar::Bar;
 use std::path::Path;
 use std::process::Stdio;
 use thiserror::Error;

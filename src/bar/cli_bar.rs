@@ -1,4 +1,4 @@
-use crate::progress::bar::Bar;
+use crate::bar::Bar;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::borrow::Cow;
 use std::sync::LazyLock;

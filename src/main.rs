@@ -1,8 +1,8 @@
+use crate::bar::cli_bar::CliProgressBar;
 use crate::downloader::download::download_file;
 use crate::extract::bilibili::get_download_url;
 use crate::extract::bvid::get_bvid_from_url;
 use crate::processer::process::{ProcessError, ProcessOption, process};
-use crate::progress::cli_bar::CliProgressBar;
 use crate::util::path::get_paths;
 use crate::util::temp::{add_temp_file, drop_temp_file};
 use clap::Parser;
@@ -10,12 +10,12 @@ use std::error::Error;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio_util::sync::CancellationToken;
 
+mod bar;
 mod cli;
 mod downloader;
 mod extract;
 mod macros;
 mod processer;
-mod progress;
 mod util;
 
 #[tokio::main]

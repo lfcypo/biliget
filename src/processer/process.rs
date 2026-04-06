@@ -1,5 +1,5 @@
+use crate::bar::Bar;
 use crate::processer::ffmpeg::{FfmpegError, convert_audio, merge_video};
-use crate::progress::bar::Bar;
 use std::path::Path;
 use thiserror::Error;
 use tokio_util::sync::CancellationToken;

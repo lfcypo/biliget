@@ -1,3 +1,5 @@
+pub mod cli_bar;
+
 pub trait Bar {
     async fn set_length(&mut self, length: u64);
     async fn update_progress(&mut self, delta: u64);
