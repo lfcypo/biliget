@@ -20,7 +20,7 @@ regex = "1.12.2"
 thiserror = "2.0.17"
 clap = { version = "4.5.53", features = ["derive"] }
 sanitize-filename = "0.6.0"
-fast-down-ffi = { version = "0.2.0", features = ["file", "mem"] }
+fast-down-ffi = { version = "0.3.0", features = ["file", "mem"] }
 tokio = { version = "1.49.0", default-features = false, features = [
     "io-std",
     "macros",
