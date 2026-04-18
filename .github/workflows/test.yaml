@@ -1,0 +1,185 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "clippy"
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+
+      - name: Clippy lint
+        run: cargo hack clippy --feature-powerset -- -D warnings
+
+  test:
+    name: Test ${{ matrix.channel }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        channel: [ stable, beta, nightly ]
+        include:
+          - os: macos-latest
+            channel: stable
+          - os: windows-2022
+            channel: stable
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.channel }}
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "test-${{ matrix.os }}-${{ matrix.channel }}"
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+
+      - name: Run Tests
+        run: cargo hack test --feature-powerset --depth 1
+
+  deny:
+    name: Deny Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "deny"
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+
+      - name: Run Deny
+        run: cargo deny --all-features check
+
+  udeps:
+    name: Unused Deps Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "udeps"
+
+      - name: Install cargo-hack & cargo-udeps
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack,cargo-udeps
+
+      - name: Run Udeps
+        run: cargo udeps --all-features --workspace
+
+  docs:
+    name: Doc Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "docs"
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+
+      - name: Run Doc Check
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --all-features --no-deps
+
+  minimal-versions:
+    name: Minimal Versions Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          prefix-key: "minimal"
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+
+      - name: Downgrade dependencies
+        run: cargo +nightly update -Z minimal-versions
+
+      - name: Check with minimal versions
+        run: cargo hack check --feature-powerset
