@@ -103,4 +103,4 @@ zsh: parse error near `&'
 ## 致谢
 
 - share121/unidown
-- [fast-down/core](https://github.com/fast-down/core) 多线程下载由`fast-down`强劲驱动
+- 多线程下载由[fast-down](https://github.com/fast-down/)强劲驱动
