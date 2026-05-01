@@ -2,7 +2,6 @@
 name = "biliget"
 
 [package.metadata.release]
-changelog = { path = "CHANGELOG.md", template = "keepachangelog" }
 tag-prefix = "v"
 
 publish = false
