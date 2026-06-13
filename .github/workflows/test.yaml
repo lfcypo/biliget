@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
 
@@ -118,7 +118,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Rust Cache
         uses: swatinem/rust-cache@v2
