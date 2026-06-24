@@ -40,7 +40,7 @@ cargo install biliget
 
 请参考 [编译与构建](https://github.com/lfcypo/biliget?tab=readme-ov-file#%E7%BC%96%E8%AF%91%E4%B8%8E%E6%9E%84%E5%BB%BA)。
 
-### 下载视频
+### 下载
 
 默认模式：自动合并音视频为一个`.mp4`视频文件
 
@@ -60,6 +60,12 @@ cargo install biliget
 
 ```shell
 ./biliget [url] -o [filename or path]
+```
+
+确认所有步骤：
+
+```shell
+./biliget [url] -y
 ```
 
 ## 编译与构建

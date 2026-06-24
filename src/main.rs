@@ -58,12 +58,14 @@ async fn app(cli: cli::Cli, cancel: CancellationToken) -> Result<(), Box<dyn Err
     let (output_file, video_temp_file, audio_temp_file) = get_paths(&title, &cli);
     println!("准备下载到: {}", output_file.display());
 
-    if output_file.try_exists().unwrap_or(false) {
-        println!("注意喵！目标文件已存在 继续下载将覆盖同名文件");
-    }
+    if !cli.confirm_all {
+        if output_file.try_exists().unwrap_or(false) {
+            println!("注意喵！目标文件已存在 继续下载将覆盖同名文件");
+        }
 
-    println!("按回车继续喵...");
-    wait_for_enter(cancel.clone()).await?;
+        println!("按回车继续喵...");
+        wait_for_enter(cancel.clone()).await?;
+    }
 
     println!("开始下载喵...");
 

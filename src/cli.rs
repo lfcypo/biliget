@@ -6,6 +6,10 @@ pub struct Cli {
     /// Bilibili 视频地址
     pub url: String,
 
+    /// 确认所有
+    #[arg(short = 'y', long = "yes", default_value_t = false)]
+    pub confirm_all: bool,
+
     /// 仅下载音频
     #[arg(short = 'a', long = "audio", default_value_t = false)]
     pub only_audio: bool,

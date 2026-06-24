@@ -216,6 +216,7 @@ mod tests {
     fn create_cli_demo(output: Option<String>, only_audio: bool) -> Cli {
         Cli {
             url: "https://example.com".to_string(),
+            confirm_all: false,
             output,
             only_audio,
         }
