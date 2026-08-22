@@ -30,7 +30,13 @@ pub enum DownloaderError {
     UrlParseError(#[from] url::ParseError),
 
     #[error("下载错误")]
-    DownloadError(#[from] fd::Error),
+    DownloadError(#[source] Box<fd::Error>),
+}
+
+impl From<fd::Error> for DownloaderError {
+    fn from(error: fd::Error) -> Self {
+        Self::DownloadError(Box::new(error))
+    }
 }
 
 pub async fn download_file(
